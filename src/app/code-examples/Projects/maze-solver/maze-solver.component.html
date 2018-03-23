@@ -1,0 +1,249 @@
+<div class="container mt-3">
+  <!--Section: Blog v.3-->
+  <section class="section pt-4">
+    <h1 class="section-heading light-blue-text h1" style="display: inline-block;">Maze Solver</h1>
+    <button type="button" class="btn btn-primary btn-sm waves-light float-right" mdbRippleRadius onclick="window.open('https://github.com/MatthewBridgeman/MazeSolver','_blank')"><i class="fa fa-github mr-1"></i> GitHub Page </button>
+    <p class="text-justify">
+      This small project was assigned to me as a technical test. The aim was to create a simple and clean java application that could take in mazes via file and solve them in under 30 seconds, outputting the result to console.
+    </p>
+    <p class="text-justify">
+      There are quite a few ways I could have gone about solving a maze, utilising different algorithms such as depth-first, breadth-first, A*, etc. I decided to go with a simple depth-first algorithm as the test specifically asked
+      for the code to be simple, and I figured having the program try every direction until it found it's way to the end was the simplist, at least from a human perspective. As well as this, depth-first is also very easy code.
+    </p>
+
+    <h2 class="feature-title light-blue-text">The Code</h2>
+    <p>The application can be broken down into three main parts:</p>
+    <ul>
+      <li>The user input - fetching the maze file</li>
+      <li>Loading and processing the maze file</li>
+      <li>Solving the maze</li>
+    </ul>
+
+    <h5 class="feature-title light-blue-text">User Input</h5>
+    <p class="text-justify">
+      In this section of the program, the user is prompted to enter the filename of the maze file. We do a simple check to see if they included the .txt extension, and add one if they didn't. Once We've got a filename, we check to
+      see if the file exists. If not, the code loops back to the beginning and asks for a filename again, until a valid one is provided.
+    </p>
+
+    <h5 class="feature-title light-blue-text">Loading and Processing the Maze</h5>
+    <p class="text-justify">
+      Before the maze can be solved, the file needs to be read line by line, character by character to get the data and load it into memory. Because we're reading the characters one by one, and sometimes we're going to need
+      to read numbers that are more than one digits, we're going to need a way to piece together multiple digits into one number. This will only need to be done for the first three lines that provide information about the maze,
+      as the maze itself will only consist of 1's and 0's. The way we do this is by adding each character we read to a string until we find a space, at which point a boolean is set to true which will make it start working on
+      the second number. These number strings are then converted to integers and used for the maze size, start location and end location. Some sample code of this can be seen below:
+    </p>
+    <pre class="prettyprint"><code>
+  // Set the string variables for the numbers, as well as the boolean
+  String mazeSizeXStr = "";
+  String mazeSizeYStr = "";
+  boolean spaceFound = false;
+	    			
+  // Loop through every other character in the line
+  for (int charPos = 0; charPos < line.length(); charPos++) {{ '{' }}	    			
+	  if (line.charAt(charPos) != ' ') {{ '{' }} // If the character being read is not a space, then it is probably a number
+		  if (!spaceFound) {{ '{' }} // If a space hasn't been found yet, we're still piecing together the first number
+		    mazeSizeXStr += line.charAt(charPos); // Add each number to the string 
+		  {{ '}' }}
+		  else {{ '{' }}
+		    mazeSizeYStr += line.charAt(charPos);
+		  {{ '}' }}
+	  {{ '}' }} else {{ '{' }}
+		  spaceFound = true; // If a space is found, we set this to true so that we start working on the second number
+	  {{ '}' }}
+  {{ '}' }}
+
+  // Set the maze size by parsing the strings into integers
+  mazeSize.setLocation(Integer.parseInt(mazeSizeXStr), Integer.parseInt(mazeSizeYStr));
+    </code></pre>
+    <p class="text-justify">
+      Once we're done loading the information about the maze, it's time to load the maze itself. We do this in a similar way as before by reading every line and every character, except now we don't need to worry about
+      checking for spaces, and we can instead just increment the character search by 2 every time. The maze is going to be structured as a 2d array list consisting of characters. As we read each number of the maze we add it to the
+      array, exchanging the 0's for ' ' and the 1's for #'s. This is because the final output needs to be displayed with those characters and we might as well convert it here instead of at the end. Once the line has been fully read we
+      add it to the main maze array.
+    </p>
+    <pre class="prettyprint"><code>
+  // Set the maze size by parsing the strings into integers
+  mazeSize.setLocation(Integer.parseInt(mazeSizeXStr), Integer.parseInt(mazeSizeYStr));
+
+  // Initialize the array for the individual maze line
+	ArrayList&lt;Character&gt; mazeLine = new ArrayList&lt;Character&gt;();
+		    		
+	// Loop through every other character in the line, skipping the empty spaces.
+	for (int charPos = 0; charPos < line.length(); charPos += 2) {{ '{' }}
+		    			
+		// Read and replace the numbers in the maze with the appropriate characters
+		if (line.charAt(charPos) == '0') {{ '{' }}
+			mazeLine.add(' ');
+		{{ '}' }}
+		else if (line.charAt(charPos) == '1') {{ '{' }}
+			mazeLine.add('#');
+		{{ '}' }}
+	{{ '}' }}
+	// If the new maze line array isn't empty, push to the main maze array.
+	if (!mazeLine.isEmpty()) {{ '{' }}
+		mazeArray.add(mazeLine);
+	{{ '}' }}
+    </code></pre>
+    <h5 class="feature-title light-blue-text">Solving the Maze</h5>
+    <p class="text-justify">
+      Now that the maze is loaded we can finally start on solving it. As we're doing depth-first type searching, we're going to be trying a direction until we can no longer go forwards, at which point we will backtrack to the last
+      time we had another possible direction and go forwards again. Doing it this way means we should eventually reach the end, or if there is no solution we will find ourselves back at the start with no where to go.
+    </p>
+    <p class="text-justify">
+      To start we're going to need an array of points that holds the solution route, and then push the starting position as the first point. We will then set this position as our current position and begin to solve the maze. We also
+      create a boolean to check if we're stuck with no where to go.
+    </p>
+    <pre class="prettyprint"><code>                               
+  // Push the starting location to the solution array and set current position
+  maze.solution.add(maze.startLocation);
+  Point currentPos = maze.solution.get(maze.solution.size() - 1);
+  boolean stuck = false;
+    </code></pre>
+    <p class="text-justify">
+      Now that we have our starting position, we need to move to the next position. We do this by creating a while loop that is constantly checking if we have reached the end location destination, or if the stuck boolean has
+      been set to true which indicates we have no where to go. Inside the while loop, we will be doing the actual movement. We check if we can go up, left, right, or down by checking we're not at the edge of the maze and that the next
+      position is an open space (an empty space ' ' or the end location 'E'). If any of those is a valid move we push that location into the solution array and set it as our current position, as well as setting that position in the maze
+      to an 'X' to indicate the path we took.
+    </p>
+    <pre class="prettyprint"><code>                               
+  if ((currentPos.y > 0) && ((maze.maze.get(currentPos.y - 1).get(currentPos.x) == ' ') || (maze.maze.get(currentPos.y - 1).get(currentPos.x) == 'E'))) {{ '{' }}
+    maze.solution.add(new Point(currentPos.x, currentPos.y - 1)); // Push the new up position into the solution stack
+    currentPos = maze.solution.get(maze.solution.size() - 1); // Set the current position to the latest position in the solution stack
+    maze.maze.get(currentPos.y).set(currentPos.x, 'X'); // Set the current position in the maze to an X to indicate our path
+    maze.steps++; // Iterate the number of steps we've done
+  {{ '}' }}
+    </code></pre>
+    <p class="text-justify">
+      If no direction can be taken and we're at a dead end we need to backtrack and check each direction again, and keep doing this until we find a possible direction we can take or we are stuck. The first thing we do here is check
+      if we're at the starting location, as if we are and we've reached this backtrack code again we obviously can'y go anywhere and we need to change the 'stuck' boolean to true. If we're not at the starting location however we
+      simply set the current position in the maze to a '@' to indicate a path we've been before, then remove the last element in the solution array and set our current positon to the new latest position.
+    </p>
+    <pre class="prettyprint"><code>                               
+  // We could not go in any direction and reached a dead end, so we need to back track
+  else if (currentPos != maze.startLocation) {{ '{' }}
+	  maze.maze.get(currentPos.y).set(currentPos.x, '@'); // Set the path we just came from to an @ symbol to indicate it is a path we have already taken 
+	  maze.solution.remove(maze.solution.size() - 1); // Pop the last positon we we're in from the solution stack
+	  currentPos = maze.solution.get(maze.solution.size() - 1); // Set the current position to the latest position in the solution stack
+	  maze.steps++;
+  {{ '}' }}
+  // We have no where else to go, end the loop as there is no solution
+  else {{ '{' }}
+	  stuck = true;
+  {{ '}' }}
+    </code></pre>
+    <p class="text-justify">
+      That is basically it for solving the maze. The program should exit the while loop at either the end or start location with a solution or not. The last thing we need to do before we can display the maze
+      is clean up the maze itself, as we changed a lot of the paths to '@' symbols during the solving. We just need to loop through the entire maze and find and replace those '@' symbols with empty spaces ' ' and then print
+      the result to console.
+    </p>
+    <pre class="prettyprint"><code>                               
+  Enter filename to load: large_input
+  File successfully loaded: large_input.txt
+
+  Maze was solved in a total of 7796 steps, in 34 milliseconds.
+  #################################################################################################################################################################
+  #S    #   #   #   #   #         #   #   #     #     #     # #     #             #   #     #       #               #       #         #     #   #   #   #     #   #
+  #X##### # ### # # ### # ##### # ### # ### ### # ### # ### # # ### # ########### # ### ### # ##### # ############# ####### ######### # ### # # ### # # # ### # # #
+  #XXXXX# # #     #     # #     #   # #     # #   #   #   # #   #   #       #     # #   # # #     # #   #     #       #     #         #   # # #     # # # # #   # #
+  #####X### # ########### # ##### # # # ##### # # ####### # # ##### ##### # ####### # ### # ### ### ### ##### # ### # # # ### # ####### # # # ####### # # # # ### #
+  #XXXXX#   #         #   #     # # # #     # # # #   #   #   #   #     # #     #   # #   #   #   #   # #     # #   # # #     #       # # #   #   #   # #   # #   #
+  #X##### ########### # ####### # # # ##### # # ### # ####### # # # ### # ### # # ### ### ### # # ### # # ##### # ### ############### ### ##### # # ### ##### # ###
+  #X#    XXXXXXX    # #   #     # #   #   #   #   # # #   #   # # # # # #   # #     #     #   # # # #   # #     # #   #   #             #   #   # #   #       #   #
+  #X# ###X#####X### # # # ####### ####### ####### # # # # ### # # # # # ##### ### ######### ### # # ##### # ### ### ### # # ######### # # # ##### ### #############
+  #X#   #X#   #X# # # # #       # #     #   #   #   # # # #   # #   # # #     #   #   #   #   # # #     # #   # #   #   # #     #     # # #     # #   #           #
+  #X#####X# ###X# # # ####### # # ### # ### ### ##### # # # ######### # # ##### ### # # ##### ### ##### # ### # # ####### ##### # ##### ####### # # ### ######### #
+  #X#XXXXX# #XXX#   #   #   # # #   # #   #   # #   # # #   #     #     # #     #   # #   #   #     #   #     # #       #   #   #     #       # # # # #     #   # #
+  #X#X##### #X####### # # # # # ### # ### ### # ### # # ##### ### # ##### # ##### ### ### # ### ##### # ############### ### ######### ####### # # # # ### ### # # #
+  #X#X#     #XXX#   # # # # # #   # #   #   #   #   # #         # # #   # # #     # #       # # #     # # #       # #     # #   #     #   #   #   # #       # # # #
+  #X#X# #######X# # ### # ### ##### ### ### # ### ### ########### ### # # # # ##### ##### ### # # ##### # # ##### # # ### # # # ####### # # ### ### ##### # # # ###
+  #X#X#      XXX# # #   #     #     # # # # #     #   #   # #     #   #   #   #     #   #     # #     # # #     # #   #   #   #   #XXX# #XXX    #   #   # #   #   #
+  #X#X#######X### # # ######### ##### # # # ### ### ### # # # ##### ########### ##### # ##### # # # ### # ##### # ##### ######### #X#X###X#X##### ### # # # ##### #
+  #XXX#   # #X#   # #       #   #   # #   #   # #       #   # #         #       #     #         # # #   #     # #   # # #   #XXX# #X#XXX#X#X#   #   # #   #   #   #
+  ##### # # #X# ### ##### # # ##### # ####### # # ########### # ####### # ####################### ### ####### # ### # # # # #X#X# #X###X#X#X# # ### ######### # ###
+  #     #   #X#   # #     # # #   #     #   #   # #   #     # # #   #   #     #     #     # #     #   #     #   #     #   # #X#X  #XXX#XXX#X# # #   #XXXXX#   # # #
+  # ####### #X##### ####### # # # ### # # # # ### ### # ### # ### ### ####### # ### ##### # # ##### ### ### ######### #######X#X#####X# ###X### # ###X###X# ### # #
+  # #     # #X#XXX#XXXXX#   # # #   # # # # # # #   # # #   #   #   #       #   #       # #   #     # #   #     #XXX# # #XXXXX#XXX#XXX#   #XXX#  XXX#X#XXX# #     #
+  # # ### # #X#X#X#X###X# ### # ### ### # ### # ### # # ####### ### # ##### ########### # # ### ##### ######### #X#X# # #X#######X#X##### ###X###X#X#X#X### ### # #
+  # #   # # #XXX#XXX# #X# #   #   #   # #   # #     # # #   #     # #   #   #   #     # # # # #   #     #XXXXX#  X#XXXXXXX#   #XXX#X#     #XXX#XXX#X#X#XXX# #   # #
+  # ### # ########### #X# ### ### ### # # # # ### ### # # # # # # # ##### ##### # # ### # # # ### # ### #X###X###X### ##### # #X###X# #####X###X###X#X###X# # ### #
+  #   # #             #X# #   # #   #     # # #   #   #   #   # #   #   # #       #   #   # #   # #   # #X#XXX# #X#   #     # #XXX#X#     #X#XXX#XXX#X#XXX# # #   #
+  ### # ############# #X# # ### ### ##### # # # ### ####### ### ##### # # # ######### ### # ### # # ### #X#X### #X# ### ##### ###X#X##### #X#X###X###X#X##### #####
+  #   # #         #  XXX# #   #     #     #   #       # #   #   #   # #   # #   #     #   #   #   # #   #X#XXXXXXX#   # #   # # #X#X    # #XXX#XXX#XXX#X#   #     #
+  ### # # ######### #X### ### ####### ############# # # # ### # # # # ##### # # # # ### ##### ####### ###X######### # # # ### # #X#X### # #####X# #X###X# # ##### #
+  #   #   #       # #XXXXXXX#     #   #       #   # # #   #   # # #   #   # # # # # #   #   #   #     #XXX# #     # # # #     #  XXX#   #   #  X# #X#XXX# # #   # #
+  # ######### ### # ##### #X##### # ### ##### # # # # # ######### ####### # # # # # # ### # ### # ### #X### # ### ### # ############# ### # ###X###X#X### # ### # #
+  #           # #   #     #X#     #     #     # #   # # #                   # # # #   #   # #   #   # #XXX#   #   #   #   # #         #   #   #XXX#X#XXX# #       #
+  ########### # ##### #####X# ####### ### # ### ##### # # ####### # ######### ### ##### ### # ##### #####X##### ### ### # # # ######### ##### ###X#X###X# ##### ###
+  #   #     #   #     #    X#       # #   #   #   #   #   #       #   #     # #   #   # #   # #   # #XXXXX    #     # # # #   #         #   #   #XXX#XXX#     #   #
+  # # ##### ###############X####### # # ######### # ##### # ######### # # # # # ### # # ##### ### # #X############### # ### ### ######### # ### #####X####### # # #
+  # #              XXXXXXX#X#XXX#   # # #       # #   #   #       #   # # #   #   # # #   # #     # #XXX# #     #       #   #   #       # #   #   # #X#XXXXX# # # #
+  # ####### #######X#####X#X#X#X# # # # # ##### # ### ########### # ### # ####### ### ### # ##### # ###X# # ### # ####### ### ### ##### # ### ### # #X#X###X# # # #
+  #       # #XXXXXXX#XXX#XXX#X#X# #   #   # #   #   #       #   # #   # #   #     #   #     #     # #XXX#     #       #   #   # # # #     # #     # #X#X#XXX# # # #
+  # ##### ###X# #####X#X#####X#X# ######### # ##### ####### # # # ### # ##### ##### ##### ### ##### #X########### ##### ### ### # # # ##### ####### #X#X#X##### ###
+  #     #   #X# #XXX#X#X#XXXXX#XXXXXXX#XXX#   #XXX# #     # # # #   # # #     #     #   #     #     #X#XXX      #       # # #   # # #       #   #   #XXX#XXXXXXXXX#
+  ##### ### #X###X#X#X#X#X###########X#X#X#####X#X# ##### # ### ##### # # ##### ##### # ##### # #####X#X#X############### # # ### # ### ##### # # ###############X#
+  #     # # #XXXXX#XXX#XXX#   #   # #XXX#XXXXXXX#X#     # #       #   #   #     #   # #   #   # #   #XXX#X    #       #     #   # #   #   #   # #   #   #XXXXXXXXX#
+  # ##### # ############# ### # # # #############X##### # ##### # # # ##### ##### # # ### # ### # # #####X### # # ### # ####### # ### ### # ####### # # #X####### #
+  # #   #   #     #     #     # # #   #   #XXXXX#X#   #   #     #   #   # #   #   # #   #   # #   #     #XXX# # # #   #   #   # #   #     # #  XXX#   # #XXXXX#   #
+  # # # ##### ### # ### ##### # # # # # # #X###X#X# ##### ############# # ### ### # ### ##### ### #########X# # ### ##### ### # ### ####### ###X#X### #######X# ###
+  # # #     # #   #   #     # # #   #   # #X# #XXX#     #         #   #   #     # #   # #   # #XXXXXXXXXXXXX#   #   # #   #   #   # # #     #XXX#XXXXXXXXXXXXX# # #
+  # # ##### # # ##### ##### # # ######### #X# ######### ######### # # ######### ##### # # # # #X##### ########### ### # ### ##### # # # # # #X####### ######### # #
+  # #   #     #       #     #     #       #X# #     #   #         # #XXX#XXXXX# #     # # #   #XXX# #     # #     #   # # # #   #   #   # # #XXX#   #   #   #   # #
+  # ### # ############### ######### #######X# # ### # # # ######### #X#X#X###X# # ##### # ### ###X# ##### # # ##### ### # # # # ####### ### ###X# # ### # # # ### #
+  #   # # #   #           #         #XXXXX#XXX  #     #   #   #   # #X#X#X#XXX# # #   # # # #   #X#   # # # #   #   #   # #   # #       #   #XXX# #   # # # #     #
+  ### ### ### # ########### #########X###X###X##### ####### # # # # #X#X#X#X### # # ### # # ### #X# # # # # # ### # # ### ##### ######### ###X####### # # # #######
+  # # #   #   #   #         #   #   #X# #XXXXX#     #       #   #   #X#XXX#XXX# #     # # #     #X# #   # # # #   # #   #     #         #   #XXX#       # #   #   #
+  # # # ### ####### # ######### # ###X# ####### ############# #######X# #####X# ##### # # ##### #X# ##### # # # ### ### ##### ######### ### ###X# ########### ### #
+  #   # #   #     # #   #       #   #XXXXX# #   #  XXX#XXX#   #  XXXXX#   #XXX#       #   #XXX# #X#       # #   #   #   #XXX#       #   #XXXXXXX# #   #   # # #   #
+  ### # # ##### # # ### # ######### #####X# # #####X#X#X#X#######X####### #X##### ##### ###X#X# #X####### # ##### ### ###X#X####### # ###X####### # # # # # # # ###
+  #   # #     # #     #   #       #      X#   #XXX#X#X#X#XXX# #XXX#     # #X#XXX#XXX# # #XXX#X# #X#       #     # #     #X#XXX# #   #   #X#     # # #   #   # # # #
+  # ### ##### # ### ####### ##### #######X### #X#X#X#X#X###X# #X### ### # #X#X#X#X#X# # #X###X###X# ##### ##### # # ### #X###X# # ##### #X##### # ####### # # # # #
+  #     #     # # #   #     # #   #XXXXXXX#   #X#X#X#XXX# #X  #XXX# # #   #XXX#XXX#XXX  #X#XXX#XXX#     #     #   # #   #X# #X# # #   #  X  #   # #     # # #     #
+  ####### ##### # ### ####### # ###X###########X#X#X##### #X#####X# # ###############X###X#X###X######### ######### # ###X# #X# # # # ###X# # ### # ### ### ### # #
+  #       #     # #       #   # # #XXX#XXXXXXXXX#XXX#   #  X    #X# #   #  XXXXXXXXXXX#XXX#XXXXX# #     # #     #   #   #X# #XXX# # # # #X# #   #     #         # #
+  # ##### # # ### # # ### # ### # ###X#X############# # ###X#####X# ### # #X###########X######### # ### # # ### # #######X# # #X# ### # #X# ### ########### ##### #
+  #     #   # # # # # #   #     #    XXX#     #       # # #XXXXXXX# #   # #XXXXXXXXXXXXX#     #     # #   # #   # #XXXXXXX# # #X# #XXXXXXX# #   #           #   # #
+  ##### ##### # # # # # ### # ########### ### # # ##### # ######### # ############### # # ### # ##### ####### # # #X####### # #X# #X####### # ### ############# ###
+  # #   #   # # # # # #     # #     #     #   # # #     #     #   # #             #   # #   # #       #   #   #   #XXXXXXX# # #XXXXX#   # #   #   #     #     #   #
+  # # # # # # # # # ########### ### # ##### ##### # ######### # ### ####### ##### # ####### # ########### # ### #########X# # ### ### # # ##### ### ### # ### ### #
+  #   #   # #     #     #     # #   # #         # #     #   #       #     #     # # #       # #             #   #   #   #X# # #   #   # #       #   # #   #   #   #
+  ######### ########### # ### ### ### # ### ### # ##### # # ### ### # ### ##### # # # ####### # ####### ##### ### # # ###X# # # # # ### ### # ### ### ### # ### ###
+  #   #     #   #     #   #   #   #   #   #   #   # #   # # # # #   #   # #     #   #   #   #   # #   # #     #   # #XXXXX#   # # #   # #   #   # #   # # #     # #
+  # # # ####### # ####### # ### ### ### # ### ##### # ##### # # ######### # ####### ### # # ##### # # ### ######### #X######### ####### # ####### # ### # ####### #
+  # # #       # #     #   # #     #   # # #     # #         #             #     # # #     # #   #   #   #   #   #   #XXX#XXXXX# #       #       #   #     #     # #
+  # ######### # # ### ##### # ####### # # ##### # ####################### # ### # # # ##### # # ##### # # # # # # #####X#X###X# # ############# # ##### ### ### # #
+  # #     #     # # #   #   # #       # #     # #   #     #     # #       # #   #   #   #   # # #   # #   #   #   # #XXX#X#XXX#   #           # #   #   #   # # # #
+  # # # # # # ### # ### # # # # ####### ##### # ### # ### # ### # # ####### ########### # ### # # # ############### #X###X#X####### # ##### ### ### # ### ### # # #
+  #   # #   #     #   # # # # #     # # #   # #   # # # #   #       #       #     #     # #   # # #   #   #       #  XXX#X#XXX#   # # #   #     #   #   # # #   # #
+  ##### ############# # # # # ##### # # # # ##### # # # ############# ####### ### ####### # ##### ### # # # # ### #####X#X###X### # # # ######### ##### # # ### # #
+  # #   #   #       #   # #         #   # #       #   #               #   # #   #         #       # #   # # # # #     #XXX#  X    # # # #       # #   #   #   #   #
+  # # ##### # ############### ########### ############# ######### ##### # # ### ########### ####### # ##### # # ##### ##### #X####### # # # ### ### # # ### #######
+  # #     # #   #   #   #     #   #   #   #   #     #   #   #     #     #     # #   #     #     #   # #     #   #     #     #X#     # #   #   #     #   #   #     #
+  # ##### # ### # # # # # ##### ### # # ### # # ### # ### # # ##### ####### # # # # # ### ##### # ### # ####### ####### #####X##### # ### ### ########### ### ### #
+  # #     #   #   #   # #   # # #   #   #   # #   # #     # # #     #       # #   #   # #   # #     # #     #   #       #  XXX  #   #   # #   #         # #   #   #
+  # # ####### # ####### ### # # # ####### ####### # ####### # ### ##################### ### # ##### # ##### ### # ####### #X### # ##### ### ### # # ##### ##### ###
+  #   #         #   # #     # #   #             # #     #   #   # #                       # #   #   #     #   #   #     # #XXX#       # #   # # # #   #     #     #
+  ##### ##### ### # # ### ### ##### ##### ##### # ### # # ##### # # ######### ######### # # # # # ####### ### ##### ### #####X######### # ### # ##### # ### # #####
+  #   # #   #   # # # #   #   #   # #     #     # #   # #   #   # # # #       #         #   # # #   #   #     #       # #XXX#X#       # #   # #   #   # # # #     #
+  # ### # # # # # # # # ### # ### # ### ##### ##### ####### # ### # # # ####### ### ######### # ##### # ####### ####### #X#X#X# ##### # # ### ### ##### # # ##### #
+  #     # # # #   #   # #   #     #   # # #   #       #     #   #   #   #   #   #   #   #     #     # #   #     # #     #X#XXX#XXXXX# #   #XXXXX#     #   #       #
+  ### ##### ########### ### ######### # # # ##### ### # ####### # ####### # ##### ### # # # ####### # # ### ##### # #####X#####X###X# #####X###X##### ### # #######
+  #   #   #     #       #   #       # #   # #   # #   #       # #       # #   # # #   #   #       # # #     #   #   #   #X#XXX#XXX#X#   #XXX#  XXXXXXX  # #       #
+  # ### # ##### # ####### ### ##### # ##### # # # ########### # ####### # ### # # # ############# # # ####### # # ##### #X#X#X###X#X#####X###########X# ##### ### #
+  # #   #   #   #   #       # #     # #       #           #   #     #   #   # # #       #       # #   #   #   # # #   # #XXX#XXXXX#XXXXX#X  #XXXXX  #X#       #   #
+  # # ##### # ##### # ### # # # ####### ################# # ####### # ####### # ### ### # ##### # ##### # ##### # # # # ###############X#X###X###X###X########### #
+  # #     #   #   #   # # # # #     #   #           #   #   #       # #   #   #     #   # #     # #     #       #   # # #     #     # #X#X  #X# #XXXXX#XXXXX#XXX# #
+  # ##### ####### ### # # # # ##### # ### ##### ### ### ### # ####### # # # ############# ######### ################# # ##### # ### # #X#X# #X# #######X###X#X#X# #
+  #     # #     #   # #   #   #     #     #     # #   # #   #     #   # # # #           #   #   #   #   #   #     #     #   # # #   #  XXX# #XXX#XXX#XXX# #XXX#X# #
+  ##### # # ### ### # ######### ### ####### ##### ### # # ####### # ##### # # ######### ### # # # ### # # # ##### ##### # # # # # ######### ###X#X#X#X### #####X###
+  #   # # #   #   #     #     #   #   #   # #     #     #       # #   #   # #   #   #   #   # #     # #   # #   #   #   # # #   # #         #XXX#X#XXX# #XXXXX#XXX#
+  # # # # ### ### ####### # ##### ### ### # # ################### ### # ### ### # # # ### ### ##### # ##### # # ### # ##### ##### # ### #####X###X# ### #X###X###X#
+  # #   #   # # # #       #   # #   #     #   #                 # #   #   # #   # # #   #   #     # #   #   # #     #   #   #   # # #   #   #X#XXX#   # #XXX#XXXXX#
+  # ### ### # # # # # # ##### # ### ####### ### ######### ##### # # ### # # # ### # ### # # ##### # ### # # # ##### ### # ### # # # # ##### #X#X### # # # #X#######
+  #   #     #   #   # #     #       #       #   #         #       #     #   #     #   #   #       #     # #   #         #     #     #       #XXX#   #   # #XXXXXXE#
+  #################################################################################################################################################################
+    </code></pre>
+  </section>
+
+  <!--Section: Blog v.3-->
+</div>

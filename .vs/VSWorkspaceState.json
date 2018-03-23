@@ -1,0 +1,20 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\app-navbar",
+    "\\src\\app\\blog",
+    "\\src\\app\\code-examples",
+    "\\src\\app\\code-examples\\Projects",
+    "\\src\\app\\code-examples\\Projects\\maze-solver",
+    "\\src\\app\\contact",
+    "\\src\\app\\portfolio",
+    "\\src\\app\\portfolio\\Projects",
+    "\\src\\app\\portfolio\\Projects\\all-in",
+    "\\src\\app\\portfolio\\Projects\\case-simulator",
+    "\\src\\app\\resume"
+  ],
+  "SelectedNode": "\\protractor.conf.js",
+  "PreviewInSolutionExplorer": false
+}

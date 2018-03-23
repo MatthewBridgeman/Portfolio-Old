@@ -1,0 +1,33 @@
+<mdb-navbar SideClass="navbar fixed-top navbar-expand-lg navbar-dark bg-indigo scrolling-navbar" [containerInside]="true">
+  <logo>
+      <a class="logo navbar-brand"  routerLink=""><strong>MB</strong></a>
+  </logo>
+  <links>
+      <ul class="navbar-nav mr-auto">
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+              <a class="nav-link" routerLink="" >Home</a>
+          </li>
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active">
+              <a class="nav-link" routerLink="/resume" >Resume</a>
+          </li>
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active">
+              <a class="nav-link" routerLink="/portfolio">Portfolio</a>
+          </li>
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active">
+            <a class="nav-link" routerLink="/code-examples">Code Examples</a>
+          </li>
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active">
+              <a class="nav-link" routerLink="/blog">Blog</a>
+          </li>
+          <li class="nav-item waves-light" mdbRippleRadius routerLinkActive="active">
+              <a class="nav-link" routerLink="/contact">Contact</a>
+          </li>
+      </ul>
+           
+      <ul class="navbar-nav nav-flex-icons">
+          <li class="nav-item waves-light" mdbRippleRadius>
+              <a class="nav-link" href="https://github.com/MatthewBridgeman" target="_blank"><i class="fa fa-github"></i></a>
+          </li>
+      </ul>
+  </links>
+</mdb-navbar>
