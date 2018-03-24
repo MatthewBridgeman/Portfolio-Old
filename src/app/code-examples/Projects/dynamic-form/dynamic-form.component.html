@@ -1,3 +1,57 @@
-<p>
-  dynamic-form works!
-</p>
+<div class="container mt-3">
+  <!--Section: Blog v.3-->
+  <section class="section pt-4">
+    <h1 class="section-heading light-blue-text h1" style="display: inline-block;">Dynamic Form</h1>
+    <button type="button" class="btn btn-primary btn-sm waves-light float-right" mdbRippleRadius onclick="window.open('https://github.com/MatthewBridgeman/Personal-Website/tree/master/src/app/code-examples/Projects/dynamic-form','_blank')"><i class="fa fa-github mr-1"></i> GitHub Page </button>
+
+    <p class="text-justify">
+      This is an example of the dynamic form that I created for the <a routerLink="/portfolio/all-in">All In CMS</a>. It's purpose is so that you can add, remove, and rearange sections that would later be
+      displayed on the mobile apps. This way you can add text, an image, an input box, etc and fully design the pages and content the app would deliver straight from the CMS. This is a watered down version
+      however, as the full version had many more different sections you could add, such as questions and answers, video, and much more, as well as background options, next page destinations, etc.
+    </p>
+    <p class="text-justify">
+      A proper write-up on how it works and why I coded it in the way I did will be coming soon, but for now you can find the code at my
+      <a href="https://github.com/MatthewBridgeman/Personal-Website/tree/master/src/app/code-examples/Projects/dynamic-form" target="_blank">GitHub</a> page for this website.
+    </p>
+
+    <form #formData='ngForm' (ngSubmit)="onSubmit(formData)">
+      <div class="card">
+        <div class="pt-2 pb-3 pl-4 pr-4">
+          <div dnd-sortable-container [dropZones]="['sections-zone']" [sortableData]="sectionList" style="margin-top:20px;">
+            <div *ngFor="let section of sectionList; let i = index">
+              <div class="card mb-2">
+                <!--Card content-->
+                <div class="card-body">
+                  <a class="float-right" (click)="deleteSection(i)"><i class="fa fa-trash-o"></i></a>
+
+                  <!--Title-->
+                  <h4 class="card-title" dnd-sortable [sortableIndex]="i"><strong>{{sectionListPresentable[i]}}</strong></h4>
+
+                  <hr>
+                  <dynamic-content type={{section.type}}></dynamic-content>
+                </div>
+                <!--/.Card content-->
+              </div>
+            </div>
+          </div>
+          <div class="float-right">
+            <button type="button" class="btn btn-primary" (click)="addTextSection('')">Add text section</button>
+            <button type="button" class="btn btn-primary" (click)="addImageSection('')">Add image section</button>
+            <button type="button" class="btn btn-primary" (click)="addInputSection('')">Add input section</button>
+          </div>
+          <div class="form-group form-actions">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="md-form mt-3">
+      <i class="fa fa-list prefix grey-text"></i>
+      <textarea type="text" placeholder="Form output..." class="form-control md-textarea md-textarea-auto" style="height: 300px;" rows="10" [(ngModel)]="output" ngModel></textarea>
+    </div>
+  </section>
+  <!--Section: Blog v.3-->
+</div>
+
+
